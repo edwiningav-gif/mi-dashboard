@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard Pedagógico Interactivo</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033}
+header{background:linear-gradient(135deg,#0f172a,#1d4ed8);color:white;padding:22px 28px}
+header h1{margin:0 0 6px;font-size:28px}.wrap{max-width:1500px;margin:auto;padding:20px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.tab{border:0;border-radius:10px;padding:10px 14px;font-weight:700;background:#dbeafe;color:#1e3a8a;cursor:pointer}.tab.active{background:#1d4ed8;color:white}
+.panel{display:none}.panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:14px}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px;box-shadow:0 5px 18px rgba(15,23,42,.05)}
+.kpi .lbl{font-size:13px;color:#64748b}.kpi .val{font-size:30px;font-weight:800;margin:7px 0}.kpi .sub{font-size:12px;color:#64748b}
+select{padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;background:white;margin-left:8px}.controls{margin-bottom:14px}
+.chartbox{height:330px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px;border-bottom:1px solid #e5e7eb;text-align:left}th{background:#eff6ff;color:#1e3a8a;position:sticky;top:0}
+.scroll{max-height:560px;overflow:auto}
+.note{background:#fff7ed;border-left:4px solid #d97706;padding:12px;border-radius:8px;margin:12px 0}
+.good{background:#ecfdf5;border-left:4px solid #16a34a;padding:12px;border-radius:8px;margin:12px 0}
+.pA{border-left:5px solid #16a34a}.pB{border-left:5px solid #d97706}.pC{border-left:5px solid #dc2626}
+.badge{padding:4px 8px;border-radius:999px;font-weight:700;font-size:11px}.Baja{background:#dcfce7;color:#166534}.Media{background:#fef3c7;color:#92400e}.Alta{background:#fee2e2;color:#991b1b}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.twocol{grid-template-columns:1fr}}@media(max-width:560px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>Dashboard Pedagógico Interactivo</h1><div>Learning Analytics · Inglés · visualización tipo Power BI · datos anonimizados</div></header>
+<div style="max-width:1500px;margin:14px auto 0;padding:0 20px;">
+  <div style="background:#eef2ff;border-left:4px solid #4f46e5;padding:12px 14px;border-radius:8px;color:#312e81;">
+    <strong>Protección de datos estudiantiles:</strong>
+    los nombres reales han sido sustituidos por identificadores anónimos
+    (Estudiante 001, Estudiante 002, etc.) para resguardar la privacidad,
+    confidencialidad y seguridad de la información académica del estudiantado.
+  </div>
+</div>
+
+<div class="wrap">
+<div class="tabs">
+<button class="tab active" data-t="kpi">KPI</button>
+<button class="tab" data-t="desc">Estadística descriptiva</button>
+<button class="tab" data-t="infer">Estadística inferencial</button>
+<button class="tab" data-t="profiles">Perfiles estudiantiles</button>
+<button class="tab" data-t="presc">Estadística prescriptiva</button>
+<button class="tab" data-t="data">Datos</button>
+</div>
+
+<section id="kpi" class="panel active">
+<div class="controls"><b>Perfil:</b><select id="filter"><option>Todos</option><option>A - Consolidado</option><option>B - En desarrollo</option><option>C - Apoyo intensivo</option></select></div>
+<div id="kpis" class="grid"></div>
+<div class="twocol"><div class="card chartbox"><canvas id="cProfiles"></canvas></div><div class="card chartbox"><canvas id="cAlerts"></canvas></div></div>
+</section>
+
+<section id="desc" class="panel">
+<div id="desckpis" class="grid"></div>
+<div class="twocol"><div class="card chartbox"><canvas id="cGrades"></canvas></div><div class="card chartbox"><canvas id="cSat"></canvas></div></div>
+</section>
+
+<section id="infer" class="panel">
+<div class="note"><b>Precaución metodológica:</b> la muestra contiene 25 estudiantes. Las asociaciones son exploratorias y no prueban causalidad.</div>
+<div class="twocol">
+<div class="card"><h3>Correlaciones con la calificación</h3><table id="corr"></table></div>
+<div class="card"><h3>Lectura inferencial</h3><p>Se examinan relaciones entre desempeño y variables del proceso: asistencia, tareas y riesgo pedagógico.</p><p>La inferencia sirve para detectar patrones útiles para la intervención, no para etiquetar ni tomar decisiones automáticas de alto impacto.</p></div>
+</div>
+</section>
+
+<section id="profiles" class="panel">
+<div class="note">
+  <b>Privacidad:</b> esta vista utiliza únicamente identificadores anónimos.
+  Los nombres reales han sido retirados para proteger la identidad y los datos académicos del estudiantado.
+</div>
+
+<div class="grid">
+<div class="card pA"><h3>A · Consolidado</h3><p>Enriquecimiento, autonomía, proyectos y transferencia.</p></div>
+<div class="card pB"><h3>B · En desarrollo</h3><p>Modelado, práctica guiada, apoyos visuales y retroalimentación frecuente.</p></div>
+<div class="card pC"><h3>C · Apoyo intensivo</h3><p>Nivelación, microlecciones, tutoría y seguimiento individual.</p></div>
+</div>
+<div class="card" style="margin-top:16px"><h3>Detalle por estudiante</h3><div class="scroll"><table id="profileTable"></table></div></div>
+</section>
+
+<section id="presc" class="panel">
+<div class="card"><h3>Matriz prescriptiva de andamiaje</h3>
+<table><thead><tr><th>Señal</th><th>Decisión</th><th>Intervención</th><th>Meta</th></tr></thead>
+<tbody>
+<tr><td>Participación baja + dificultad alta</td><td>Andamiaje focalizado</td><td>Think-pair-share, role-play, sentence frames, modelado</td><td>Reducir participación baja a ≤40%</td></tr>
+<tr><td>Calificación &lt;5.5 + tareas bajas</td><td>Apoyo intensivo</td><td>Microlecciones, prerrequisitos, tutoría, microentregas</td><td>Reducir &lt;5.5 de 20% a 10%</td></tr>
+<tr><td>Asistencia &lt;80%</td><td>Alerta temprana</td><td>Recuperación y seguimiento tutorial</td><td>Elevar asistencia grupal a ≥88%</td></tr>
+<tr><td>Calificación ≥7.5</td><td>Enriquecimiento</td><td>Proyecto, debate, producción auténtica y retos</td><td>Mantener progreso y autonomía</td></tr>
+</tbody></table></div>
+<div class="good"><b>Ciclo:</b> diagnóstico → perfil → andamiaje → seguimiento → reclasificación → ajuste.</div>
+</section>
+
+<section id="data" class="panel"><div class="card"><h3>Base analítica</h3><div class="scroll"><table id="dataTable"></table></div></div></section>
+</div>
+
+<script>
+const data=[{"ID": 1, "Nombre": "Estudiante 001", "Calificacion": 10.0, "Asistencia": 95.0, "Participacion": "Alta", "Tareas": 100.0, "Dificultad": "Baja", "Satisfaccion": "Satisfecho", "Perfil": "A - Consolidado", "RiesgoScore": 1.0000000000000009, "Alerta": "Baja"}, {"ID": 2, "Nombre": "Estudiante 002", "Calificacion": 10.0, "Asistencia": 92.0, "Participacion": "Alta", "Tareas": 100.0, "Dificultad": "Baja", "Satisfaccion": "Muy Satisfecho", "Perfil": "A - Consolidado", "RiesgoScore": 1.5999999999999992, "Alerta": "Baja"}, {"ID": 3, "Nombre": "Estudiante 003", "Calificacion": 9.0, "Asistencia": 90.0, "Participacion": "Alta", "Tareas": 95.0, "Dificultad": "Baja", "Satisfaccion": "Satisfecho", "Perfil": "A - Consolidado", "RiesgoScore": 3.0000000000000004, "Alerta": "Baja"}, {"ID": 4, "Nombre": "Estudiante 004", "Calificacion": 8.5, "Asistencia": 88.0, "Participacion": "Media", "Tareas": 90.0, "Dificultad": "Media", "Satisfaccion": "Satisfecho", "Perfil": "A - Consolidado", "RiesgoScore": 4.3999999999999995, "Alerta": "Baja"}, {"ID": 5, "Nombre": "Estudiante 005", "Calificacion": 8.5, "Asistencia": 89.0, "Participacion": "Media", "Tareas": 90.0, "Dificultad": "Media", "Satisfaccion": "Satisfecho", "Perfil": "A - Consolidado", "RiesgoScore": 4.199999999999999, "Alerta": "Baja"}, {"ID": 6, "Nombre": "Estudiante 006", "Calificacion": 8.5, "Asistencia": 87.0, "Participacion": "Media", "Tareas": 85.0, "Dificultad": "Media", "Satisfaccion": "Satisfecho", "Perfil": "A - Consolidado", "RiesgoScore": 5.6000000000000005, "Alerta": "Baja"}, {"ID": 7, "Nombre": "Estudiante 007", "Calificacion": 8.5, "Asistencia": 90.0, "Participacion": "Alta", "Tareas": 90.0, "Dificultad": "Media", "Satisfaccion": "Muy Satisfecho", "Perfil": "A - Consolidado", "RiesgoScore": 3.999999999999999, "Alerta": "Baja"}, {"ID": 8, "Nombre": "Estudiante 008", "Calificacion": 7.5, "Asistencia": 85.0, "Participacion": "Media", "Tareas": 80.0, "Dificultad": "Media", "Satisfaccion": "Neutro", "Perfil": "A - Consolidado", "RiesgoScore": 7.0, "Alerta": "Baja"}, {"ID": 9, "Nombre": "Estudiante 009", "Calificacion": 7.5, "Asistencia": 84.0, "Participacion": "Media", "Tareas": 80.0, "Dificultad": "Media", "Satisfaccion": "Satisfecho", "Perfil": "A - Consolidado", "RiesgoScore": 7.199999999999999, "Alerta": "Baja"}, {"ID": 10, "Nombre": "Estudiante 010", "Calificacion": 6.5, "Asistencia": 82.0, "Participacion": "Baja", "Tareas": 70.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "B - En desarrollo", "RiesgoScore": 32.457142857142856, "Alerta": "Media"}, {"ID": 11, "Nombre": "Estudiante 011", "Calificacion": 6.5, "Asistencia": 80.0, "Participacion": "Baja", "Tareas": 70.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "B - En desarrollo", "RiesgoScore": 32.85714285714286, "Alerta": "Media"}, {"ID": 12, "Nombre": "Estudiante 012", "Calificacion": 6.0, "Asistencia": 83.0, "Participacion": "Baja", "Tareas": 65.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "B - En desarrollo", "RiesgoScore": 36.114285714285714, "Alerta": "Alta"}, {"ID": 13, "Nombre": "Estudiante 013", "Calificacion": 6.0, "Asistencia": 81.0, "Participacion": "Baja", "Tareas": 65.0, "Dificultad": "Alta", "Satisfaccion": "Neutro", "Perfil": "B - En desarrollo", "RiesgoScore": 36.51428571428571, "Alerta": "Alta"}, {"ID": 14, "Nombre": "Estudiante 014", "Calificacion": 6.0, "Asistencia": 82.0, "Participacion": "Baja", "Tareas": 60.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "B - En desarrollo", "RiesgoScore": 37.31428571428572, "Alerta": "Alta"}, {"ID": 15, "Nombre": "Estudiante 015", "Calificacion": 6.0, "Asistencia": 80.0, "Participacion": "Baja", "Tareas": 60.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "B - En desarrollo", "RiesgoScore": 37.71428571428571, "Alerta": "Alta"}, {"ID": 16, "Nombre": "Estudiante 016", "Calificacion": 5.5, "Asistencia": 78.0, "Participacion": "Baja", "Tareas": 50.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "B - En desarrollo", "RiesgoScore": 42.971428571428575, "Alerta": "Alta"}, {"ID": 17, "Nombre": "Estudiante 017", "Calificacion": 5.5, "Asistencia": 79.0, "Participacion": "Baja", "Tareas": 50.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "B - En desarrollo", "RiesgoScore": 42.77142857142857, "Alerta": "Alta"}, {"ID": 18, "Nombre": "Estudiante 018", "Calificacion": 5.5, "Asistencia": 77.0, "Participacion": "Baja", "Tareas": 45.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "B - En desarrollo", "RiesgoScore": 44.17142857142857, "Alerta": "Alta"}, {"ID": 19, "Nombre": "Estudiante 019", "Calificacion": 5.5, "Asistencia": 78.0, "Participacion": "Baja", "Tareas": 50.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "B - En desarrollo", "RiesgoScore": 42.971428571428575, "Alerta": "Alta"}, {"ID": 20, "Nombre": "Estudiante 020", "Calificacion": 5.5, "Asistencia": 76.0, "Participacion": "Baja", "Tareas": 45.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "B - En desarrollo", "RiesgoScore": 44.37142857142857, "Alerta": "Alta"}, {"ID": 21, "Nombre": "Estudiante 020", "Calificacion": 4.0, "Asistencia": 75.0, "Participacion": "Baja", "Tareas": 40.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "C - Apoyo intensivo", "RiesgoScore": 54.14285714285714, "Alerta": "Alta"}, {"ID": 22, "Nombre": "Estudiante 022", "Calificacion": 4.0, "Asistencia": 74.0, "Participacion": "Baja", "Tareas": 40.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "C - Apoyo intensivo", "RiesgoScore": 54.34285714285714, "Alerta": "Alta"}, {"ID": 23, "Nombre": "Estudiante 023", "Calificacion": 3.5, "Asistencia": 70.0, "Participacion": "Baja", "Tareas": 30.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "C - Apoyo intensivo", "RiesgoScore": 60.0, "Alerta": "Alta"}, {"ID": 24, "Nombre": "Estudiante 024", "Calificacion": 3.0, "Asistencia": 68.0, "Participacion": "Baja", "Tareas": 25.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "C - Apoyo intensivo", "RiesgoScore": 64.25714285714285, "Alerta": "Alta"}, {"ID": 25, "Nombre": "Estudiante 025", "Calificacion": 2.0, "Asistencia": 65.0, "Participacion": "Baja", "Tareas": 20.0, "Dificultad": "Alta", "Satisfaccion": "Insatisfecho", "Perfil": "C - Apoyo intensivo", "RiesgoScore": 71.57142857142857, "Alerta": "Alta"}];
+const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+const n=v=>Number(v)||0;
+const pct=(a,b)=>b?100*a/b:0;
+function subset(){const f=document.getElementById('filter').value;return f==='Todos'?data:data.filter(x=>x.Perfil===f)}
+function renderKPI(){
+ const d=subset(),N=d.length;
+ const items=[
+ ['Estudiantes',N,'casos visibles'],
+ ['Promedio',mean(d.map(x=>n(x.Calificacion))).toFixed(2)+'/10','rendimiento'],
+ ['Aprobación',pct(d.filter(x=>n(x.Calificacion)>=7).length,N).toFixed(0)+'%','calificación ≥7'],
+ ['Riesgo <7',pct(d.filter(x=>n(x.Calificacion)<7).length,N).toFixed(0)+'%','seguimiento'],
+ ['Asistencia',mean(d.map(x=>n(x.Asistencia))).toFixed(1)+'%','promedio'],
+ ['Tareas',mean(d.map(x=>n(x.Tareas))).toFixed(1)+'%','entrega'],
+ ['Dificultad alta',pct(d.filter(x=>x.Dificultad==='Alta').length,N).toFixed(0)+'%','percepción'],
+ ['Satisfacción +',pct(d.filter(x=>['Satisfecho','Muy Satisfecho'].includes(x.Satisfaccion)).length,N).toFixed(0)+'%','positiva']
+ ];
+ document.getElementById('kpis').innerHTML=items.map(x=>`<div class="card kpi"><div class="lbl">${x[0]}</div><div class="val">${x[1]}</div><div class="sub">${x[2]}</div></div>`).join('');
+ renderMainCharts(d);
+}
+let charts={};
+function chart(id,type,labels,vals,title){
+ if(charts[id])charts[id].destroy();
+ charts[id]=new Chart(document.getElementById(id),{type,data:{labels,datasets:[{label:title,data:vals}]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:title},legend:{display:type==='doughnut'}}}});
+}
+function renderMainCharts(d){
+ chart('cProfiles','bar',['Consolidado','En desarrollo','Apoyo intensivo'],[
+ data.filter(x=>x.Perfil==='A - Consolidado').length,data.filter(x=>x.Perfil==='B - En desarrollo').length,data.filter(x=>x.Perfil==='C - Apoyo intensivo').length],'Distribución por perfil');
+ chart('cAlerts','doughnut',['Baja','Media','Alta'],['Baja','Media','Alta'].map(a=>d.filter(x=>x.Alerta===a).length),'Nivel de alerta');
+}
+function renderDesc(){
+ const g=data.map(x=>n(x.Calificacion)).sort((a,b)=>a-b),m=mean(g),med=g.length%2?g[(g.length-1)/2]:(g[g.length/2-1]+g[g.length/2])/2;
+ const sd=Math.sqrt(mean(g.map(v=>(v-m)**2)));
+ const it=[['Media',m.toFixed(2)],['Mediana',med.toFixed(2)],['Desv. estándar',sd.toFixed(2)],['Mínimo',Math.min(...g)],['Máximo',Math.max(...g)],['N',g.length]];
+ document.getElementById('desckpis').innerHTML=it.map(x=>`<div class="card kpi"><div class="lbl">${x[0]}</div><div class="val">${x[1]}</div></div>`).join('');
+ chart('cGrades','bar',['≥7.5','6–7.49','5.5–5.99','<5.5'],[
+ data.filter(x=>n(x.Calificacion)>=7.5).length,data.filter(x=>n(x.Calificacion)>=6&&n(x.Calificacion)<7.5).length,data.filter(x=>n(x.Calificacion)>=5.5&&n(x.Calificacion)<6).length,data.filter(x=>n(x.Calificacion)<5.5).length],'Distribución de calificaciones');
+ const s=['Muy Satisfecho','Satisfecho','Neutro','Insatisfecho'];chart('cSat','bar',s,s.map(v=>data.filter(x=>x.Satisfaccion===v).length),'Satisfacción global');
+}
+function corr(a,b){const ma=mean(a),mb=mean(b);let p=0,da=0,db=0;for(let i=0;i<a.length;i++){let x=a[i]-ma,y=b[i]-mb;p+=x*y;da+=x*x;db+=y*y}return da&&db?p/Math.sqrt(da*db):0}
+function renderCorr(){
+ const g=data.map(x=>n(x.Calificacion)), vars=[['Asistencia',data.map(x=>n(x.Asistencia))],['Tareas',data.map(x=>n(x.Tareas))],['Riesgo pedagógico',data.map(x=>n(x.RiesgoScore))]];
+ document.getElementById('corr').innerHTML='<thead><tr><th>Variable</th><th>r</th><th>Lectura</th></tr></thead><tbody>'+vars.map(v=>{let r=corr(g,v[1]);let l=Math.abs(r)>=.6?'Fuerte':Math.abs(r)>=.3?'Moderada':'Débil';return `<tr><td>${v[0]}</td><td>${r.toFixed(2)}</td><td>${l}</td></tr>`}).join('')+'</tbody>';
+}
+function renderTables(){
+ const h=['ID','Nombre','Calificacion','Asistencia','Tareas','Participacion','Dificultad','Satisfaccion','Perfil','RiesgoScore','Alerta'];
+ const head='<thead><tr>'+h.map(x=>`<th>${x}</th>`).join('')+'</tr></thead>';
+ const body='<tbody>'+data.map(r=>'<tr>'+h.map(k=>k==='Alerta'?`<td><span class="badge ${r[k]}">${r[k]}</span></td>`:`<td>${r[k]}</td>`).join('')+'</tr>').join('')+'</tbody>';
+ document.getElementById('dataTable').innerHTML=head+body;document.getElementById('profileTable').innerHTML=head+body;
+}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.t).classList.add('active')});
+document.getElementById('filter').onchange=renderKPI;
+renderKPI();renderDesc();renderCorr();renderTables();
+</script></body></html>
